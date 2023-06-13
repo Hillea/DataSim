@@ -63,34 +63,18 @@ If you know the ground truth, you can check how often/under which circumstances 
 -   "estimate properties of statistical models in situations in which algorithms for computing those properties are unknown or can be applied only with difficulty." @debruinelisa
 :::
 
-# How to simulate data?
-
-## Monte Carlo Simulation
-
-::: incremental
-1.  Define domain of possible values (our assumptions, for the prob. dist., e.g. what's the probability of getting tail if coin is fair? What is a realistic average height for human men?)
-2.  Generate random numbers
-3.  Perform computation
-4.  Repeat & combine results across many repetitions
-:::
-
-## Simulate data
-
--   Often we have *crossed random effects*: Participants and stimuli (mice and stimuli? cells and conditions? Think about trials or encounters: What are the unique combinations of sampling units or rows in your data?)
-
-    -   Random effects: We want to generalize beyond the ones used to the whole population
-
-    -   Goal: "typical encounter"
-
--   
+## R Basics
 
 ## Probability distributions
+
+(Maybe only normal distribution? Just show briefly...)
 
 ::: columns
 ::: {.column width="30%"}
 Uniform distribution:
 
-```{r fig.height=3}
+```{r fig.height=2, fig.width=4}
+
 library(tidyverse)
 name <- 1:12
 prob <- sample(x = .08333333, size = 12, replace = TRUE)
@@ -111,7 +95,7 @@ ggplot(dat, aes(name, prob)) +
 ::: {.column width="30%"}
 Binomial distribution:
 
-```{r fig.height=3, fig.width=4}
+```{r fig.height=2, fig.width=4}
 heads10000 <- replicate(n = 10000, 
                         expr = sample(0:1, 10, TRUE) %>% 
                           sum())
@@ -138,9 +122,30 @@ Normal distribution:
 :::
 :::
 
-Also different r functions (r, q, p, d)
+-   Also different r functions (r, q, p, d)
 
-setting the seed
+-   setting the seed (important for pseudo-random number generator)
+
+# How to simulate data?
+
+## Monte Carlo Simulation
+
+::: incremental
+1.  Define domain of possible values (our assumptions, for the prob. dist., e.g. what's the probability of getting tail if coin is fair? What is a realistic average height for human men?)
+2.  Generate random numbers
+3.  Perform computation
+4.  Repeat & combine results across many repetitions
+:::
+
+## Simulate data
+
+-   Often we have *crossed random effects*: Participants and stimuli (mice and stimuli? cells and conditions? Think about trials or encounters: What are the unique combinations of sampling units or rows in your data?)
+
+    -   Random effects: We want to generalize beyond the ones used to the whole population
+
+    -   Goal: "typical encounter"
+
+-   
 
 ## What's the "ground truth"?
 
