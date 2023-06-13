@@ -1,0 +1,183 @@
+---
+title: "Introduction to Data Simulation"
+subtitle: |
+   | Jour Fixe 
+   | RTG 2660
+author: "Dr. Mario Reutter & Dr. Lea Hildebrandt"
+format: 
+  revealjs:
+    smaller: true
+    scrollable: true
+    slide-number: true
+    theme: moon
+    chalkboard: true
+editor: visual
+from: markdown+emoji
+bibliography: references.bib
+---
+
+# What is Data Simulation?
+
+::: incremental
+-   Creating "fake datasets" that are similar to real datasets (to be) collected
+
+    -   same variables etc.
+
+    -   based on assumptions we have about the processes giving rise to the data (Data Generating Process), e.g. what are realistic reaction times?
+:::
+
+. . .
+
+::: columns
+::: {.column width="50%"}
+![Experiment. We sample from the population, estimate parameters based on assumptions about the distributions, and generalize those parameters to the population.](images/exp-01.jpg)
+:::
+
+::: {.column width="50%"}
+![Simulation. We define parameters ("ground truth") based on our assumptions, sample from distribution, and check whether estimates are similar to parameters.](images/exp.jpg)
+:::
+:::
+
+::: notes
+Usually, we sample from population & make assumptions about the underlying distribution/how the observed data have been generated. We usually then use the observed data to estimate population parameters and their uncertainty.
+
+Data simulation inverts this process: Define parameters (= ground truth hypothetical population), then generate data from it --\> analyze --\> see how well estimated correspond to true value @debruinelisa
+
+"**specifying a model to characterize a population of interest** and then using the computer's random number generator to **simulate the process of sampling data from that population**." https://psyteachr.github.io/stat-models-v1/introduction.html
+:::
+
+## Why simulate data?
+
+::: incremental
+1.  Make inferences about function (comp. modeling?)
+2.  **Evaluate data analysis methods**
+    -   generate data w/ "real" qualities, apply analysis, validate it against "ground truth"
+        -   under which circumstances do we get the correct answer?
+    -   power analysis
+3.  Assess uncertainty (if difficult to do so analytically)
+:::
+
+::: notes
+If you know the ground truth, you can check how often/under which circumstances a statistical model will give us the correct answer. It also allows us to experiment with modeling choices... ([@debruinelisa])
+
+-   "estimate properties of statistical models in situations in which algorithms for computing those properties are unknown or can be applied only with difficulty." @debruinelisa
+:::
+
+# How to simulate data?
+
+## Monte Carlo Simulation
+
+::: incremental
+1.  Define domain of possible values (our assumptions, for the prob. dist., e.g. what's the probability of getting tail if coin is fair? What is a realistic average height for human men?)
+2.  Generate random numbers
+3.  Perform computation
+4.  Repeat & combine results across many repetitions
+:::
+
+## Simulate data
+
+-   Often we have *crossed random effects*: Participants and stimuli (mice and stimuli? cells and conditions? Think about trials or encounters: What are the unique combinations of sampling units or rows in your data?)
+
+    -   Random effects: We want to generalize beyond the ones used to the whole population
+
+    -   Goal: "typical encounter"
+
+-   
+
+## Probability distributions
+
+::: columns
+::: {.column width="30%"}
+Uniform distribution:
+
+```{r fig.height=3}
+library(tidyverse)
+name <- 1:12
+prob <- sample(x = .08333333, size = 12, replace = TRUE)
+dat <- tibble(name, prob)
+ggplot(dat, aes(name, prob)) +
+  geom_col() +
+  scale_y_continuous(limits = c(0,.2), name = "Probability of occurrence") +
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10,11,12),
+                     name = "Name in hat",
+                     labels = c("Your Name","Amy", "Jaimie","Emily","Helena","Ashley","Wil","Phil","James","Lorna","Maxine","Kirsty")) +
+  theme_minimal()
+```
+:::
+
+::: {.column width="5%"}
+:::
+
+::: {.column width="30%"}
+Binomial distribution:
+
+```{r fig.height=3, fig.width=4}
+heads10000 <- replicate(n = 10000, 
+                        expr = sample(0:1, 10, TRUE) %>% 
+                          sum())
+data10000 <- tibble(heads = heads10000) %>%   # convert to a tibble
+                group_by(heads) %>%     # group by number of possibilities 
+                summarise(n = n(), # count occurances of each possibility,
+                          p=n/10000) # & calculate probability (p) of each
+ggplot(data10000, aes(x = heads,y = p)) + 
+  geom_bar(stat = "identity") + 
+  labs(x = "Number of Heads", 
+       y = "Probability of Heads in 10 flips (p)") +
+  theme_bw() +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10))
+```
+:::
+
+::: {.column width="5%"}
+:::
+
+::: {.column width="30%"}
+Normal distribution:
+
+![](images/norm_dist_height.PNG)
+:::
+:::
+
+Also different r functions (r, q, p, d)
+
+setting the seed
+
+## What's the "ground truth"?
+
+We define the distributions accordingly, e.g. how would a uniform distribution look like if we tossed a *fair* coin?
+
+## Linear (Mixed) Model
+
+-   go into some detail that a lot of our data is "mixed/hierarchical"
+
+    -   ANOVA etc: Often "fallacy" of treating stimuli as fixed (\~ perfect representation of whole population)!
+
+        -   With large N of subjects, even tiny differences will become significant
+
+-   Adavntages:
+
+    -   crossed random factors: Generalize to both participant and stimulus populations (simultaneously model subject and stimulus variation)
+
+    -   Deal with missing data and unbalanced designs
+
+    -   accommodate different types of (dependent and independent) variables (cont./cat.)
+
+## Power Analysis
+
+-   simple (line for one specific effect size)
+
+-   add nr of trials
+
+-   add diff ES and power (sensitivity analysis: fixed N and power, which ES?)
+
+    -   ES = 0 --\> (inflated) false positive rate?
+
+### What is Power?
+
+"Power is the probability that a specified statistical test will generate a significant result for a sample of data of a specified size taken from a population with a specified effect." @debruinelisa
+
+### How to
+
+If you can characterize the population parameters, you can repeatedly simulate and analyze data from this population. The proportion of times that this procedure produces a significant result provides an estimate of the power of your test given your assumed sample size and effect size. @debruinelisa
+
+## Faux/Simr
